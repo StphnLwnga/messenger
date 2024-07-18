@@ -1,18 +1,15 @@
 import { createServer } from 'http';
 import { readFileSync } from "fs";
-import path, { dirname } from "path";
-import { fileURLToPath } from 'url';
+import path from "path";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from '@apollo/server/express4';
 import cors from 'cors';
 import express from 'express';
-import { startStandaloneServer } from "@apollo/server/standalone";
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { gql } from "graphql-tag";
-import { Resolvers } from './types';
 import { resolvers } from "./resolvers";
 
 interface MyContext {
@@ -26,7 +23,16 @@ const typeDefs = gql(
   })
 );
 
-async function main() {
+// Create the schema, which will be used separately by ApolloServer & the WebSocket server.
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+/**
+ * A main function that integrates with Express and Apollo Server to handle incoming requests,
+ * create a WebSocket server, and set up Express middleware for CORS and body parsing.
+ *
+ * @return {Promise<void>} A promise that resolves when the server is started
+ */
+async function main(): Promise<void> {
   // Required logic for integrating with Express
   const app = express();
 
@@ -35,20 +41,37 @@ async function main() {
   // enabling our servers to shut down gracefully.
   const httpServer = createServer(app);
 
-  // Same ApolloServer initialization as before, plus the drain plugin
-  // for our httpServer.
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  // Creating the WebSocket server
+  const wsServer = new WebSocketServer({
+    // This is the `httpServer` we created in a previous step.
+    server: httpServer,
+    // Pass a different path here if app.use serves expressMiddleware at a different path
+    path: '/subscriptions',
   });
 
-  // Note you must call `start()` on the `ApolloServer`
-  // instance before passing the instance to `expressMiddleware`
+  // Hand in the schema we just created and have the WebSocketServer start listening.
+  const serverCleanup = useServer({ schema }, wsServer);
+
+  // Same ApolloServer initialization as before, plus the drain plugin for our httpServer.
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() { await serverCleanup.dispose() },
+          };
+        },
+      },
+    ],
+  });
+
+  // Note you must call `start()` on the `ApolloServer` instance before passing the instance to `expressMiddleware`
   await server.start();
 
-  // Set up our Express middleware to handle CORS, body parsing,
-  // and our expressMiddleware function.
+  // Set up our Express middleware to handle CORS, body parsing, & expressMiddleware function.
   app.use(
     '/',
     cors<cors.CorsRequest>(),
@@ -60,9 +83,14 @@ async function main() {
     }),
   );
 
-  // Modified server startup
-  await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
-  console.log(`🚀 Server running. 📭  Query at http://localhost:4000/`);
+  const PORT = 4000;
+  // Now that our HTTP server is fully set up, we can listen to it.
+  httpServer.listen(PORT, () => {
+    console.log(`
+      🚀 Server is now running. 
+      📭 Query at http://localhost:${PORT}/
+    `);
+  });
 }
 
 main();
