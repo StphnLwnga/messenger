@@ -2,9 +2,9 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "lib": ["esnext", "esnext.asynciterable", "DOM"],
-    "target": "esnext",
-    "module": "commonjs",
+    "lib": ["esnext"],
+    "target": "es2017",
+    "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
@@ -24,6 +24,6 @@
     "typeRoots": ["node_modules/@types", "src/@types"]
   },
   "files": ["src/graphql.d.ts"],
-  "include": ["src/**/*.ts", "src/**/*.graphql"],
+  "include": ["src/**/*"],
   "exclude": ["codegen.ts", "dist"]
 }

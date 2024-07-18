@@ -1,9 +1,23 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { createServer } from 'http';
 import { readFileSync } from "fs";
-import path from "path";
+import path, { dirname } from "path";
+import { fileURLToPath } from 'url';
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from '@apollo/server/express4';
+import cors from 'cors';
+import express from 'express';
+import { startStandaloneServer } from "@apollo/server/standalone";
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { gql } from "graphql-tag";
+import { Resolvers } from './types';
 import { resolvers } from "./resolvers";
+
+interface MyContext {
+  token?: string;
+}
 
 // Converts GraphQL strings into the format that Apollo libraries expect
 const typeDefs = gql(
@@ -12,34 +26,43 @@ const typeDefs = gql(
   })
 );
 
+async function main() {
+  // Required logic for integrating with Express
+  const app = express();
 
-/**
- * Creates an Apollo Server instance, starts the server, and logs the server URL.
- *
- * @return {Promise<void>} Promise that resolves when the server is ready.
- */
-async function createApolloServer(): Promise<void> {
+  // Our httpServer handles incoming requests to our Express app.
+  // Below, we tell Apollo Server to "drain" this httpServer,
+  // enabling our servers to shut down gracefully.
+  const httpServer = createServer(app);
+
+  // Same ApolloServer initialization as before, plus the drain plugin
+  // for our httpServer.
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
-  const { url } = await startStandaloneServer(server, {
-    context: async () => {
-      // this object becomes our resolver's contextValue, the third positional argument
-      const { cache } = server;
+  // Note you must call `start()` on the `ApolloServer`
+  // instance before passing the instance to `expressMiddleware`
+  await server.start();
 
-      return {
-        dataSources: {},
-      };
-    },
-    listen: { port: 4000 },
-  });
+  // Set up our Express middleware to handle CORS, body parsing,
+  // and our expressMiddleware function.
+  app.use(
+    '/',
+    cors<cors.CorsRequest>(),
+    express.json(),
+    // expressMiddleware accepts the same arguments:
+    // an Apollo Server instance and optional configuration options
+    expressMiddleware(server, {
+      // context: async ({ req }) => ({ token: req.headers.token }),
+    }),
+  );
 
-  console.log(`
-    🚀 Server is running!
-    📭  Query at ${url}
-  `);
+  // Modified server startup
+  await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
+  console.log(`🚀 Server running. 📭  Query at http://localhost:4000/`);
 }
 
-createApolloServer();
+main();
