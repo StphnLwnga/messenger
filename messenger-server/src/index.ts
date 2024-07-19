@@ -1,16 +1,27 @@
-import { createServer } from 'http';
-import { readFileSync } from "fs";
-import path from "path";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from '@apollo/server/express4';
-import cors from 'cors';
-import express from 'express';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { gql } from "graphql-tag";
+import { PubSub } from 'graphql-subscriptions';
+import { createServer } from 'http';
+import { readFileSync } from "fs";
+import path from "path";
+import cors from 'cors';
+import express from 'express';
 import { resolvers } from "./resolvers";
+
+export const pubsub = new PubSub();
+
+export let currentNumber = 0;
+
+function incrementNumber() {
+  currentNumber++;
+  pubsub.publish('NUMBER_INCREMENTED', { numberIncremented: currentNumber });
+  setTimeout(incrementNumber, 3000);
+}
 
 interface MyContext {
   token?: string;
@@ -22,9 +33,6 @@ const typeDefs = gql(
     encoding: "utf-8",
   })
 );
-
-// Create the schema, which will be used separately by ApolloServer & the WebSocket server.
-const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 /**
  * A main function that integrates with Express and Apollo Server to handle incoming requests,
@@ -46,15 +54,20 @@ async function main(): Promise<void> {
     // This is the `httpServer` we created in a previous step.
     server: httpServer,
     // Pass a different path here if app.use serves expressMiddleware at a different path
-    path: '/subscriptions',
+    path: '/',
   });
+
+
+  // Create the schema, which will be used separately by ApolloServer & the WebSocket server.
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
 
   // Hand in the schema we just created and have the WebSocketServer start listening.
   const serverCleanup = useServer({ schema }, wsServer);
 
   // Same ApolloServer initialization as before, plus the drain plugin for our httpServer.
   const server = new ApolloServer({
-    schema,
+    typeDefs,
+    resolvers,
     plugins: [
       // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -89,8 +102,11 @@ async function main(): Promise<void> {
     console.log(`
       🚀 Server is now running. 
       📭 Query at http://localhost:${PORT}/
+      🔛 Subscription at ws://localhost:${PORT}/
     `);
   });
+
+  incrementNumber();
 }
 
 main();

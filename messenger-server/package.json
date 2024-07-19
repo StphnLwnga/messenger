@@ -27,6 +27,7 @@
     "@parcel/watcher": "^2.4.0",
     "@prisma/client": "^5.16.2",
     "graphql": "^16.9.0",
+    "graphql-subscriptions": "^2.0.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.16.0",
     "lodash": "^4.17.21",
