@@ -11,7 +11,11 @@ import { readFileSync } from "fs";
 import path from "path";
 import cors from 'cors';
 import express from 'express';
+import 'dotenv/config';
+
 import { resolvers } from "./resolvers";
+
+console.log("test env", process.env.TEST_VAR)
 
 export const pubsub = new PubSub();
 
