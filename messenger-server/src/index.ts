@@ -15,8 +15,6 @@ import 'dotenv/config';
 
 import { resolvers } from "./resolvers";
 
-console.log("test env", process.env.TEST_VAR)
-
 export const pubsub = new PubSub();
 
 export let currentNumber = 0;

@@ -1,8 +1,138 @@
+
 type Query {
-  hello: String
-  currentNumber: Int
+  getUser(email: String!, password: String!): UserQueryResponse
 }
 
-type Subscription {
-  numberIncremented: Int
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): CreateUserResponse
 }
+
+"Users"
+type User {
+  id: ID!
+  "User's name"
+  name: String
+  "User's email"
+  email: String
+  "User's hashed password"
+  hashedPassword: String
+  "User's email verification status"
+  emailVerified: String
+  "User's image"
+  image: String
+  "User's accounts"
+  accounts: [Account]
+  "User's messages"
+  messages: [Message]
+  "User's conversations"
+  conversations: [Conversation]
+  "User's seen messages"
+  seenMessages: [Message]
+}
+
+"User's account(s)"
+type Account {
+  id: ID!
+  "Account type"
+  type: String
+  "Account provider e.g. Google, Github etc."
+  provider: String
+  "Account provider ID"
+  providerAccountId: String
+  "Account refresh token"
+  refresh_token: String
+  "Account access token"
+  access_token: String
+  "Token expiration"
+  expires_at: Int
+  "Token type"
+  token_type: String
+  "Token scope"
+  scope: String
+  "ID token"
+  id_token: String
+  "Session state"
+  session_state: String
+  "Account user"
+  user: User
+}
+
+"User's conversations"
+type Conversation {
+  id: ID!
+  "Conversation name"
+  name: String
+  "Last message in conversation was sent at"
+  lastMessageAt: String
+  "Is the conversation a group"
+  isGroup: Boolean
+  "Conversation created at"
+  createdAt: String
+  "Conversation updated at"
+  updatedAt: String
+  "Conversation users"
+  users: [User]
+  "Conversation messages"
+  messages: [Message]
+}
+
+"User's messages"
+type Message {
+  id: ID!
+  "Message body"
+  body: String
+  "Message image"
+  image: String
+  "Message created at"
+  createdAt: String
+  "Message updated at"
+  updatedAt: String
+  "Users that have seen the message"
+  seen: [User]
+  "Conversation the message belongs to"
+  conversation: Conversation
+  "Sender of the message"
+  sender: User
+}
+
+"Input ro create a user"
+input CreateUserInput {
+  "User's name"
+  name: String!
+  "User's email"
+  email: String!
+  "User's password"
+  password: String!
+}
+
+interface MutationResponse {
+  "Similar to HTTP status code, represents the status of the mutation"
+  code: Int
+  "Indicates whether the mutation was successful"
+  success: Boolean
+  "Human-readable message for the UI"
+  message: String
+}
+
+type UserQueryResponse implements MutationResponse {
+  "Similar to HTTP status code, represents the status of the query"
+  code: Int
+  "Indicates whether the user query was successful"
+  success: Boolean
+  "Human-readable message for the UI"
+  message: String
+  "User"
+  user: User
+}
+
+type CreateUserResponse implements MutationResponse {
+  "Similar to HTTP status code, represents the status of the mutation"
+  code: Int
+  "Indicates whether the user query was successful"
+  success: Boolean
+  "Human-readable message for the UI"
+  message: String
+  "User"
+  user: User
+}
+
