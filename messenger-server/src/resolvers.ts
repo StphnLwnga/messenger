@@ -12,9 +12,7 @@ export const resolvers: Resolvers = {
             email
           },
         });
-
-        console.log(userData)
-
+        // console.log(userData)
         if (!userData) throw new Error('User not found');
 
         const emailVerified = userData.emailVerified
@@ -84,10 +82,16 @@ export const resolvers: Resolvers = {
       }
     },
 
+    /**
+     * A function to create or update a user account with the provided input data.
+     *
+     * @param {Object} createUpdateUserAccountInput - The input data for creating or updating a user account.
+     * @return {Object} An object containing the result of the user creation/update process.
+     */
     createUpdateUserWithAccount: async (_, { createUpdateUserAccountInput }, context) => {
       const {
         name, email, emailVerified, image, provider, providerAccountId,
-        type, access_token, token_type, scope,
+        type, access_token, token_type, scope, expires_at, id_token,
       } = createUpdateUserAccountInput;
       try {
         if (!name || !email || !provider || !providerAccountId || !type) 
@@ -107,7 +111,7 @@ export const resolvers: Resolvers = {
                   }
                 },
                 data: {
-                  access_token,
+                  access_token, id_token, expires_at,
                 },
               },
             },
@@ -124,6 +128,8 @@ export const resolvers: Resolvers = {
                 access_token,
                 token_type,
                 scope,
+                id_token,
+                expires_at,
               },
             },
           },
@@ -131,9 +137,7 @@ export const resolvers: Resolvers = {
             accounts: true
           }
         });
-
-        console.log(userData)
-
+        // console.log(userData)
         return {
           code: 200,
           success: true,

@@ -132,6 +132,12 @@ input CreateUpdateUserAccountInput {
   token_type: String
   "Provider token scope e.g. `read:user`"
   scope: String
+  "Provider ID token: google specific"
+  id_token: String
+  "Provider session state: google"
+  session_state: String
+  "Token expiration: google"
+  expires_at: Int
 }
 
 interface MutationResponse {
