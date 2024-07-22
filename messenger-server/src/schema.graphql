@@ -4,7 +4,8 @@ type Query {
 }
 
 type Mutation {
-  createUser(createUserInput: CreateUserInput!): CreateUserResponse
+  createUserFromCredentials(createUserInput: CreateUserInput!): CreateUserResponse
+  createUpdateUserWithAccount(createUpdateUserAccountInput: CreateUpdateUserAccountInput!): CreateUserResponse
 }
 
 "Users"
@@ -34,11 +35,11 @@ type User {
 type Account {
   id: ID!
   "Account type"
-  type: String
+  type: String!
   "Account provider e.g. Google, Github etc."
-  provider: String
+  provider: String!
   "Account provider ID"
-  providerAccountId: String
+  providerAccountId: String!
   "Account refresh token"
   refresh_token: String
   "Account access token"
@@ -95,7 +96,7 @@ type Message {
   sender: User
 }
 
-"Input ro create a user"
+"Input to create a user"
 input CreateUserInput {
   "User's name"
   name: String!
@@ -103,6 +104,34 @@ input CreateUserInput {
   email: String!
   "User's password"
   password: String!
+}
+
+"""
+Input to create user from Github / Google provider accounts &
+tokens from NextAuth in client.
+Or update the access token for an existing user's provider account 
+"""
+input CreateUpdateUserAccountInput {
+  "User's email"
+  email: String!
+  "User's name"
+  name: String!
+  "User's email verification status"
+  emailVerified: String
+  "User's image from provider"
+  image: String
+  "Provider e.g. Google, Github etc."
+  provider: String!
+  "Provider account id i.e. user's id in provider"
+  providerAccountId: String!
+  "Provider auth type e.g `oauth`"
+  type: String!
+  "Provider access token"
+  access_token: String
+  "Provider token type e.g. `bearer`"
+  token_type: String
+  "Provider token scope e.g. `read:user`"
+  scope: String
 }
 
 interface MutationResponse {
@@ -135,4 +164,5 @@ type CreateUserResponse implements MutationResponse {
   "User"
   user: User
 }
+
 

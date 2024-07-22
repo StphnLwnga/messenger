@@ -49,7 +49,7 @@ export const resolvers: Resolvers = {
   },
 
   Mutation: {
-    createUser: async (_, { createUserInput }, context) => {
+    createUserFromCredentials: async (_, { createUserInput }, context) => {
       const { name, email, password } = createUserInput;
       try {
         if (!name || !email || !password) throw new Error('Required details missing.')
@@ -63,8 +63,6 @@ export const resolvers: Resolvers = {
             hashedPassword
           },
         });
-
-        console.log(userData)
 
         return {
           code: 200,
@@ -84,7 +82,77 @@ export const resolvers: Resolvers = {
           message: error.message,
         }
       }
-    }
+    },
+
+    createUpdateUserWithAccount: async (_, { createUpdateUserAccountInput }, context) => {
+      const {
+        name, email, emailVerified, image, provider, providerAccountId,
+        type, access_token, token_type, scope,
+      } = createUpdateUserAccountInput;
+      try {
+        if (!name || !email || !provider || !providerAccountId || !type) 
+          throw new Error('Required details missing.');
+
+        const userData = await prismaClient.user.upsert({
+          where: {
+            email
+          },
+          update: {
+            accounts: {
+              update: {
+                where: {
+                  provider_providerAccountId: {
+                    provider,
+                    providerAccountId
+                  }
+                },
+                data: {
+                  access_token,
+                },
+              },
+            },
+          },
+          create: {
+            email,
+            name,
+            image,
+            accounts: {
+              create: {
+                provider,
+                providerAccountId,
+                type,
+                access_token,
+                token_type,
+                scope,
+              },
+            },
+          },
+          include: {
+            accounts: true
+          }
+        });
+
+        console.log(userData)
+
+        return {
+          code: 200,
+          success: true,
+          message: 'User created / updated successfully',
+          user: {
+            ...userData,
+            createdAt: userData.createdAt.toISOString(),
+            updatedAt: userData.updatedAt.toISOString(),
+          } as unknown as User
+        }
+      } catch (error) {
+        console.log(error);
+        return {
+          code: 400,
+          success: false,
+          message: error.message,
+        }
+      }
+    },
   },
 
   // Subscription: {
