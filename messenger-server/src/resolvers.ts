@@ -43,7 +43,40 @@ export const resolvers: Resolvers = {
           message: error.message,
         }
       }
-    }
+    },
+
+    getUserForSession: async (_, { email }, context) => {
+      try {
+        const userData = await prismaClient.user.findUnique({
+          where: {
+            email
+          },
+        });
+
+        if (!userData) throw new Error('User not found');
+
+        const emailVerified = userData.emailVerified
+          ? userData.emailVerified.toISOString()
+          : '';
+
+        return {
+          code: 200,
+          success: true,
+          message: `User details successfully retrieved`,
+          user: {
+            ...userData,
+            emailVerified,
+          },
+        }
+      } catch (error) {
+        console.log(error);
+        return {
+          code: 400,
+          success: false,
+          message: error.message,
+        }
+      }
+    },
   },
 
   Mutation: {

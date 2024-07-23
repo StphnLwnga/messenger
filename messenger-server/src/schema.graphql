@@ -1,6 +1,7 @@
 
 type Query {
   getUser(email: String!, password: String!): UserQueryResponse
+  getUserForSession(email: String!): UserQueryResponse
 }
 
 type Mutation {
