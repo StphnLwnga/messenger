@@ -26,11 +26,11 @@ const TooltipComponent = ({ tooltipTrigger, tooltipContent }: TooltipComponentPr
 
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip delayDuration={0}>
         <TooltipTrigger>{tooltipTrigger}</TooltipTrigger>
-        <TooltipContent className={cn(
-          "bg-gray-100/70 text-gray-400 text-sm z-5000",
-          resolvedTheme === 'dark' && "bg-gray-900 text-gray-200"
+        <TooltipContent  className={cn(
+          "bg-gray-100/90 text-gray-500 text-sm z-5000",
+          resolvedTheme === 'dark' && "bg-gray-900 text-gray-200",
         )}>
           {tooltipContent}
         </TooltipContent>
