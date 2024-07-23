@@ -82,12 +82,6 @@ export const resolvers: Resolvers = {
       }
     },
 
-    /**
-     * A function to create or update a user account with the provided input data.
-     *
-     * @param {Object} createUpdateUserAccountInput - The input data for creating or updating a user account.
-     * @return {Object} An object containing the result of the user creation/update process.
-     */
     createUpdateUserWithAccount: async (_, { createUpdateUserAccountInput }, context) => {
       const {
         name, email, emailVerified, image, provider, providerAccountId,
