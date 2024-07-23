@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { AuthSocialButton } from './auth-social-button';
 import { Loading } from '@/components/ui/loading';
+import { CREATE_USER_FROM_CREDENTIALS } from '@/graphql/mutations';
 
 type Variant = 'LOGIN' | 'REGISTER';
 
@@ -122,21 +123,7 @@ export default function AuthForm(): JSX.Element {
     } else {
       try {
         const res = await axios.post(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT!, {
-          query: `
-            mutation CreateUser($createUserInput: CreateUserInput!) {
-              createUserFromCredentials(createUserInput: $createUserInput) {
-                code
-                success
-                message
-                user {
-                  id
-                  name
-                  email
-                  hashedPassword
-                }
-              }
-            }
-          `,
+          query: CREATE_USER_FROM_CREDENTIALS,
           variables: {
             createUserInput: { name, email, password, }
           },

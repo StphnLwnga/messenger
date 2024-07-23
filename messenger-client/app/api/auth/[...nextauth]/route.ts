@@ -4,6 +4,8 @@ import GithubProvider from 'next-auth/providers/github'
 import GoogleProvider from 'next-auth/providers/google'
 import axios from 'axios';
 import bcrypt from 'bcrypt';
+import { CREATE_UPDATE_USER_WITH_ACCOUNT } from '@/graphql/mutations';
+import { GET_USER } from '@/graphql/queries';
 
 const graphql_endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT!
 
@@ -25,35 +27,7 @@ export const authOptions: AuthOptions = {
         const { access_token, token_type, scope } = tokens;
         try {
           const res = await axios.post(graphql_endpoint, {
-            query: `
-              mutation CreateUpdateUserWithAccount($createUpdateUserAccountInput: CreateUpdateUserAccountInput!) {
-                createUpdateUserWithAccount(createUpdateUserAccountInput: $createUpdateUserAccountInput) {
-                  code
-                  success
-                  message
-                  user {
-                    id
-                    name
-                    email
-                    emailVerified
-                    image
-                    accounts {
-                      id
-                      type
-                      provider
-                      providerAccountId
-                      refresh_token
-                      access_token
-                      expires_at
-                      token_type
-                      scope
-                      id_token
-                      session_state
-                    }
-                  }
-                }
-              }
-            `,
+            query: CREATE_UPDATE_USER_WITH_ACCOUNT,
             variables: {
               createUpdateUserAccountInput: {
                 type: "oauth",
@@ -89,35 +63,7 @@ export const authOptions: AuthOptions = {
         const { token_type, scope, expires_at, id_token } = tokens;
         try {
           const res = await axios.post(graphql_endpoint, {
-            query: `
-              mutation CreateUpdateUserWithAccount($createUpdateUserAccountInput: CreateUpdateUserAccountInput!) {
-                createUpdateUserWithAccount(createUpdateUserAccountInput: $createUpdateUserAccountInput) {
-                  code
-                  success
-                  message
-                  user {
-                    id
-                    name
-                    email
-                    emailVerified
-                    image
-                    accounts {
-                      id
-                      type
-                      provider
-                      providerAccountId
-                      refresh_token
-                      access_token
-                      expires_at
-                      token_type
-                      scope
-                      id_token
-                      session_state
-                    }
-                  }
-                }
-              }
-            `,
+            query: CREATE_UPDATE_USER_WITH_ACCOUNT,
             variables: {
               createUpdateUserAccountInput: {
                 type: "oauth",
@@ -167,16 +113,7 @@ export const authOptions: AuthOptions = {
             throw new Error('Email and password are required')
 
           const res = await axios.post(graphql_endpoint, {
-            query: `
-              query GetUser($email: String!, $password: String!) {
-                getUser(email: $email, password: $password) {
-                    code
-                    success
-                    message
-                    user { id name email }
-                }
-              }
-            `,
+            query: GET_USER,
             variables: {
               email: credentials?.email,
               password: credentials?.password,
