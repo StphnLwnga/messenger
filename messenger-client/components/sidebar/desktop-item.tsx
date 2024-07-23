@@ -24,7 +24,7 @@ const DesktopItem = ({ href, label, icon: Icon, active, onClick }: NavItemProps)
           href={href}
           className={cn(
             "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800/50",
-            active && "bg-gray-100 dark:bg-slate-800/50",
+            active && "bg-gray-100 dark:bg-slate-600/50",
             label === 'Logout' && 'rotate-180'
           )}
         >

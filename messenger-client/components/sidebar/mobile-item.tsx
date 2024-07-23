@@ -20,7 +20,7 @@ const MobileItem = ({ href, label, icon: Icon, active, onClick }: NavItemProps) 
           onClick={handleClick}
           className={cn(
             "group flex gap-x-3 rounded-full p-4 justify-center text-sm leading-6 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800/50",
-            active && "bg-gray-100 dark:bg-slate-800/50",
+            active && "bg-gray-100 dark:bg-slate-600/50",
           )}
         >
           <span className="sr-only">{label}</span>
