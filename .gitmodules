@@ -1,3 +1,0 @@
-[submodule "messenger-clone"]
-	path = messenger-client
-	url = ./messenger-clone
