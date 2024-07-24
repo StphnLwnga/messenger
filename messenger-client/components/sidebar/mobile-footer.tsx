@@ -13,7 +13,7 @@ const MobileFooter = () => {
 
   return (
     <div
-      className="fixed justify-between w-full bottom-0 z-40 flex items-center border-t-[1px] lg:hidden bg-white dark:bg-slate-800/50"
+      className="mobile-footer fixed justify-between w-full bottom-0 z-40 flex items-center border-t-[1px] lg:hidden bg-white dark:bg-slate-800/50"
     >
       {routes.map((item) => (
         <MobileItem key={item.label} {...item}/>

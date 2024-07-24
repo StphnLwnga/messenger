@@ -74,6 +74,10 @@ body,
   );
 }
 
+.mobile-footer > button {
+  width: 100%;
+}
+
 @layer base {
   * {
     @apply border-border;
