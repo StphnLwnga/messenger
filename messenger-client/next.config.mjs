@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    domains: [
+      "utfs.io",
+      "avatars.githubusercontent.com",
+      "lh3.googleusercontent.com",
+    ]
+  },
   /**
    * A function that configures webpack.
    *
