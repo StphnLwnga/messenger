@@ -5,6 +5,21 @@ import bcrypt from 'bcrypt';
 
 export const resolvers: Resolvers = {
   Query: {
+    getUsers: async () => {
+      try {
+        const users = await prismaClient.user.findMany();
+        return users.map(user => {
+          delete user.hashedPassword;
+          return {
+            ...user, emailVerified: user.emailVerified?.toISOString()
+          }
+        });
+      } catch (error) {
+        console.log(error);
+        return [];
+      }
+    },
+
     getUser: async (_, { email, password }, context) => {
       try {
         const userData = await prismaClient.user.findUnique({
@@ -121,7 +136,7 @@ export const resolvers: Resolvers = {
         type, access_token, token_type, scope, expires_at, id_token,
       } = createUpdateUserAccountInput;
       try {
-        if (!name || !email || !provider || !providerAccountId || !type) 
+        if (!name || !email || !provider || !providerAccountId || !type)
           throw new Error('Required details missing.');
 
         const userData = await prismaClient.user.upsert({
