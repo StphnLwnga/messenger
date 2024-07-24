@@ -19,6 +19,7 @@ export const GET_USER_FOR_SESSION_ACTION = `
           id 
           name 
           email 
+          image
         }
     }
   }
