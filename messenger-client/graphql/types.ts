@@ -91,6 +91,8 @@ export type User = {
   accounts?: Maybe<Array<Maybe<Account>>>;
   /** User's conversations */
   conversations?: Maybe<Array<Maybe<Conversation>>>;
+  /** Date created at */
+  createdAt?: Maybe<Scalars['String']['output']>;
   /** User's email */
   email?: Maybe<Scalars['String']['output']>;
   /** User's email verification status */
@@ -106,4 +108,6 @@ export type User = {
   name?: Maybe<Scalars['String']['output']>;
   /** User's seen messages */
   seenMessages?: Maybe<Array<Maybe<Message>>>;
+  /** Date updated at */
+  updatedAt?: Maybe<Scalars['String']['output']>;
 };

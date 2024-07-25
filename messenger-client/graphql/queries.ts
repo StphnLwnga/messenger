@@ -24,3 +24,24 @@ export const GET_USER_FOR_SESSION_ACTION = `
     }
   }
 `;
+
+export const GET_USERS = `
+  query GetUsersExcludingSelf($email: String!) {
+    getUsersExcludingSelf(email: $email) {
+      name
+      image
+      id
+      emailVerified
+      email
+      createdAt
+    }
+  }
+`;
+
+export const GET_CURRENT_USER_CONVO_WITH_OTHER_USER = `
+  query GetCurrentUserConvoWithOtherUserQuery($currentUserEmail: String!, $otherUserEmail: String!) {
+    getCurrentUserConvoWithOtherUser(currentUserEmail: $currentUserEmail, otherUserEmail: $otherUserEmail) {
+      id
+    }
+  }
+`;

@@ -29,3 +29,27 @@ export const CREATE_UPDATE_USER_WITH_ACCOUNT = `
     }
   }
 `
+
+export const CREATE_GET_CONVERSATION = `
+  mutation CreateConversationMutation($createConversationInput: CreateConversationInput!) {
+    createConversation(createConversationInput: $createConversationInput) {
+    code
+      success
+      message
+      conversation {
+        id
+        name
+        lastMessageAt
+        isGroup
+        createdAt
+        updatedAt
+        users {
+          id
+          name
+          email
+          image
+        }
+      }
+    }
+  }
+`;
