@@ -5,13 +5,25 @@ import bcrypt from 'bcrypt';
 
 export const resolvers: Resolvers = {
   Query: {
-    getUsers: async () => {
+    getUsersExcludingSelf: async (_, { email }) => {
       try {
-        const users = await prismaClient.user.findMany();
+        const users = await prismaClient.user.findMany({
+          where: {
+            email: {
+              not: email
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        });
         return users.map(user => {
           delete user.hashedPassword;
           return {
-            ...user, emailVerified: user.emailVerified?.toISOString()
+            ...user,
+            emailVerified: user.emailVerified?.toISOString(),
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString(),
           }
         });
       } catch (error) {
@@ -48,6 +60,8 @@ export const resolvers: Resolvers = {
           user: {
             ...userData,
             emailVerified,
+            createdAt: userData.createdAt.toISOString(),
+            updatedAt: userData.updatedAt.toISOString(),
           }
         }
       } catch (error) {
@@ -81,6 +95,8 @@ export const resolvers: Resolvers = {
           user: {
             ...userData,
             emailVerified,
+            createdAt: userData.createdAt.toISOString(),
+            updatedAt: userData.updatedAt.toISOString(),
           },
         }
       } catch (error) {
@@ -92,6 +108,7 @@ export const resolvers: Resolvers = {
         }
       }
     },
+
   },
 
   Mutation: {
@@ -199,6 +216,123 @@ export const resolvers: Resolvers = {
         }
       }
     },
+
+    createConversation: async (_, { createConversationInput }, context) => {
+      try {
+        const { isGroup, members, name, currentUserId } = createConversationInput;
+
+        if (isGroup && (!name || !members || members.length < 2)) throw new Error('Cannot create group conversation with less than 2 members & a group name.');
+        // if (!isGroup && (!otherUserId || !messages || messages.length < 1)) throw new Error('Cannot create conversation with less than 1 message.');
+
+        /** For group chat conversation with more than 2 members always create a new conversation */
+        if (isGroup) {
+          const newConversation = await prismaClient.conversation.create({
+            data: {
+              name,
+              isGroup,
+              users: {
+                connect: [
+                  { id: currentUserId },
+                  ...members.map((member) => ({ id: member, })),
+                ],
+              },
+            },
+            include: {
+              users: true,
+            }
+          });
+
+          return {
+            code: 200,
+            success: true,
+            message: 'Conversation created successfully',
+            conversation: {
+              ...newConversation,
+              lastMessageAt: newConversation.lastMessageAt.toISOString(),
+              createdAt: newConversation.createdAt.toISOString(),
+              updatedAt: newConversation.updatedAt.toISOString(),
+              users: newConversation.users.map((user) => ({
+                ...user,
+                createdAt: user.createdAt.toISOString(),
+                updatedAt: user.updatedAt.toISOString(),
+                emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
+              }))
+            }
+          }
+        }
+
+        /** Handle single conversation between two users */
+        const existingConversations = await prismaClient.conversation.findMany({
+          where: {
+            OR: [
+              {
+                userIds: {
+                  equals: [currentUserId, members[0]],
+                },
+              },
+              {
+                userIds: {
+                  equals: [members[0], currentUserId],
+                },
+              },
+            ],
+          },
+        });
+
+        const singleConversation = existingConversations[0]
+
+        if (singleConversation) return {
+          code: 200,
+          success: true,
+          message: 'Conversation created successfully',
+          conversation: {
+            ...singleConversation,
+            lastMessageAt: singleConversation.lastMessageAt.toISOString(),
+            createdAt: singleConversation.createdAt.toISOString(),
+            updatedAt: singleConversation.updatedAt.toISOString(),
+          }
+        }
+
+        const newSingleConversation = await prismaClient.conversation.create({
+          data: {
+            users: {
+              connect: [
+                { id: currentUserId },
+                ...members.map((member) => ({ id: member, })),
+              ],
+            },
+          },
+          include: {
+            users: true,
+          }
+        });
+
+        return {
+          code: 200,
+          success: true,
+          message: 'Conversation created successfully',
+          conversation: {
+            ...newSingleConversation,
+            lastMessageAt: newSingleConversation.lastMessageAt.toISOString(),
+            createdAt: newSingleConversation.createdAt.toISOString(),
+            updatedAt: newSingleConversation.updatedAt.toISOString(),
+            users: newSingleConversation.users.map((user) => ({
+              ...user,
+              createdAt: user.createdAt.toISOString(),
+              updatedAt: user.updatedAt.toISOString(),
+              emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
+            }))
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        return {
+          code: 400,
+          success: false,
+          message: error.message,
+        }
+      }
+    }
   },
 
   // Subscription: {

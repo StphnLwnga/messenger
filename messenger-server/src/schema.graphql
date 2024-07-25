@@ -1,22 +1,24 @@
 
 type Query {
-  getUsers: [User!]!
+  getUsersExcludingSelf(email: String!): [User!]!
   getUser(email: String!, password: String!): UserQueryResponse
   getUserForSession(email: String!): UserQueryResponse
+  getCurrentUserConvoWithOtherUser(currentUserEmail: String!, otherUserId: String!): UserQueryResponse
 }
 
 type Mutation {
   createUserFromCredentials(createUserInput: CreateUserInput!): CreateUserResponse
   createUpdateUserWithAccount(createUpdateUserAccountInput: CreateUpdateUserAccountInput!): CreateUserResponse
+  createConversation(createConversationInput: CreateConversationInput!): CreateConversationResponse
 }
 
 "Users"
 type User {
   id: ID!
   "User's name"
-  name: String
+  name: String!
   "User's email"
-  email: String
+  email: String!
   "User's hashed password"
   hashedPassword: String
   "User's email verification status"
@@ -31,6 +33,10 @@ type User {
   conversations: [Conversation]
   "User's seen messages"
   seenMessages: [Message]
+  "Date created at"
+  createdAt: String
+  "Date updated at"
+  updatedAt: String
 }
 
 "User's account(s)"
@@ -58,6 +64,10 @@ type Account {
   session_state: String
   "Account user"
   user: User
+  "Date created at"
+  createdAt: String
+  "Date updated at"
+  updatedAt: String
 }
 
 "User's conversations"
@@ -142,6 +152,17 @@ input CreateUpdateUserAccountInput {
   expires_at: Int
 }
 
+input CreateConversationInput {
+  "Conversation name"
+  name: String
+  "Conversation users"
+  members: [String]
+  "Is the conversation a group"
+  isGroup: Boolean
+  "Current user's id"
+  currentUserId: String
+}
+
 interface MutationResponse {
   "Similar to HTTP status code, represents the status of the mutation"
   code: Int
@@ -171,6 +192,17 @@ type CreateUserResponse implements MutationResponse {
   message: String
   "User"
   user: User
+}
+
+type CreateConversationResponse implements MutationResponse {
+  "Similar to HTTP status code, represents the status of the mutation"
+  code: Int
+  "Indicates whether the user query was successful"
+  success: Boolean
+  "Human-readable message for the UI"
+  message: String
+  "Conversation"
+  conversation: Conversation
 }
 
 
