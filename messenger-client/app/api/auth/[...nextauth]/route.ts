@@ -6,6 +6,7 @@ import axios from 'axios';
 import bcrypt from 'bcrypt';
 import { CREATE_UPDATE_USER_WITH_ACCOUNT } from '@/graphql/mutations';
 import { GET_USER } from '@/graphql/queries';
+import { Session } from 'inspector';
 
 const graphql_endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT!
 
@@ -138,6 +139,12 @@ export const authOptions: AuthOptions = {
   // debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
+  },
+  callbacks: {
+    session: ({session, user}) => {
+      // TODO: Add user ID to session to be extracted in UserBox component when creating a conversation
+      return session;
+    }
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
