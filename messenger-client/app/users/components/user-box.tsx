@@ -20,11 +20,13 @@ const UserBox = ({user}: UserBoxProps) => {
   const session = useSession();
   const router = useRouter();
 
+  console.log(session)
+
   const [getConversations, {loading, error, data}] = useLazyQuery(GET_CONVERSATIONS, {
     variables: {
-      currentUserEmail: session.data?.user?.email,
-      otherUserEmail: user.email,
-    }
+      currentUserId: session.data?.user?.email,
+      members: [user.id]
+    },
   });
 
   useEffect(() => {
